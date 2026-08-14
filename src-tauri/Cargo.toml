@@ -10,7 +10,7 @@ name = "claude_zhcn_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "=2.5.6", features = [] }
+tauri-build = { version = "=2.6.3", features = [] }
 
 [dependencies]
 claude-zhcn-core = { path = "../crates/claude-zhcn-core" }
