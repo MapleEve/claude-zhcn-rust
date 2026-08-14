@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MapleEve/claude-zhcn-rust/raw/main/resources/supported-release.schema.json",
+  "title": "claude-zhcn-rust exact supported release manifest",
+  "description": "Structural contract mirroring the fail-closed Rust SupportedReleaseManifest DTO. Semantic validation remains authoritative in the Rust core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "localizerVersion", "claudeCli", "claudeDesktop"],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "localizerVersion": {
+      "$ref": "#/$defs/semver"
+    },
+    "claudeCli": {
+      "$ref": "#/$defs/claudeCli"
+    },
+    "claudeDesktop": {
+      "$ref": "#/$defs/claudeDesktop"
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "dottedVersion3": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "dottedVersion4": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^(?=.*[1-9a-f])[a-f0-9]{64}$"
+    },
+    "concreteText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!\\s*(?:[Tt][Oo][Dd][Oo]|[Tt][Bb][Dd]|[Uu][Nn][Kk][Nn][Oo][Ww][Nn]|[Cc][Hh][Aa][Nn][Gg][Ee][Mm][Ee]|[Pp][Ll][Aa][Cc][Ee][Hh][Oo][Ll][Dd][Ee][Rr]))(?!.*[<>]).+$"
+    },
+    "httpsUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "cliArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "kind", "archiveFormat", "url", "size", "sha256", "identity", "publisher"],
+      "properties": {
+        "platform": {
+          "enum": ["macos-aarch64", "macos-x86_64", "windows-x86_64"]
+        },
+        "kind": {
+          "const": "native-binary"
+        },
+        "archiveFormat": {
+          "enum": ["tar-gz", "zip"]
+        },
+        "url": {
+          "$ref": "#/$defs/httpsUrl"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "identity": {
+          "$ref": "#/$defs/concreteText"
+        },
+        "publisher": {
+          "$ref": "#/$defs/concreteText"
+        }
+      }
+    },
+    "cliArtifacts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/cliArtifact"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": ["platform"],
+            "properties": {
+              "platform": {
+                "const": "macos-aarch64"
+              },
+              "archiveFormat": {
+                "const": "tar-gz"
+              }
+            }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": ["platform"],
+            "properties": {
+              "platform": {
+                "const": "macos-x86_64"
+              },
+              "archiveFormat": {
+                "const": "tar-gz"
+              }
+            }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": ["platform"],
+            "properties": {
+              "platform": {
+                "const": "windows-x86_64"
+              },
+              "archiveFormat": {
+                "const": "zip"
+              }
+            }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      ]
+    },
+    "claudeCli": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "resourceSha256", "patchProfile", "artifacts"],
+      "properties": {
+        "version": {
+          "$ref": "#/$defs/dottedVersion3"
+        },
+        "resourceSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "patchProfile": {
+          "$ref": "#/$defs/concreteText"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/cliArtifacts"
+        }
+      }
+    },
+    "macosDesktopArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "kind",
+        "architectures",
+        "url",
+        "size",
+        "sha256",
+        "identity",
+        "publisher"
+      ],
+      "properties": {
+        "platform": {
+          "const": "macos-universal"
+        },
+        "kind": {
+          "const": "dmg"
+        },
+        "architectures": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["aarch64", "x86_64"]
+          },
+          "allOf": [
+            {
+              "contains": {
+                "const": "aarch64"
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "const": "x86_64"
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        },
+        "url": {
+          "$ref": "#/$defs/httpsUrl"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "identity": {
+          "$ref": "#/$defs/concreteText"
+        },
+        "publisher": {
+          "$ref": "#/$defs/concreteText"
+        }
+      }
+    },
+    "windowsDesktopArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "kind", "url", "size", "sha256", "identity", "publisher"],
+      "properties": {
+        "platform": {
+          "const": "windows-x86_64"
+        },
+        "kind": {
+          "const": "msix"
+        },
+        "url": {
+          "$ref": "#/$defs/httpsUrl"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "identity": {
+          "$ref": "#/$defs/concreteText"
+        },
+        "publisher": {
+          "$ref": "#/$defs/concreteText"
+        }
+      }
+    },
+    "desktopArtifacts": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/macosDesktopArtifact"
+          },
+          {
+            "$ref": "#/$defs/windowsDesktopArtifact"
+          }
+        ]
+      },
+      "contains": {
+        "$ref": "#/$defs/macosDesktopArtifact"
+      },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "claudeDesktop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "windowsAppxVersion",
+        "release",
+        "build",
+        "commitTimestamp",
+        "resourceSha256",
+        "patchProfile",
+        "artifacts"
+      ],
+      "properties": {
+        "version": {
+          "$ref": "#/$defs/dottedVersion3"
+        },
+        "windowsAppxVersion": {
+          "$ref": "#/$defs/dottedVersion4"
+        },
+        "release": {
+          "type": "string",
+          "pattern": "^(?=.*[1-9a-f])[a-f0-9]{40}$"
+        },
+        "build": {
+          "type": "string",
+          "pattern": "^(?=.*[1-9a-f])[a-f0-9]{6}$"
+        },
+        "commitTimestamp": {
+          "$ref": "#/$defs/concreteText"
+        },
+        "resourceSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "patchProfile": {
+          "$ref": "#/$defs/concreteText"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/desktopArtifacts"
+        }
+      }
+    }
+  }
+}

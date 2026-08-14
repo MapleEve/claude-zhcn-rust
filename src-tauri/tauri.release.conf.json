@@ -1,0 +1,16 @@
+{
+  "bundle": {
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/MapleEve/claude-zhcn-rust/releases/latest/download/latest.json"
+      ],
+      "pubkey": "BLOCKED_UNTIL_A_REAL_TAURI_UPDATER_PUBLIC_KEY_IS_CONFIGURED",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

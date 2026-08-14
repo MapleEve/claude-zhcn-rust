@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+
+jobs:
+  public-contracts:
+    name: Public contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Parse public JSON contracts
+        run: |
+          bun -e 'JSON.parse(await Bun.file("resources/supported-release.schema.json").text())'
+          bun -e 'JSON.parse(await Bun.file("resources/supported-release.example.json").text())'
+      - name: Check public repository surface
+        run: bun scripts/check-public-surface.ts
+      - name: Check version consistency
+        run: bun scripts/verify-versions.ts
+      - name: Check scaffold release configuration
+        run: bun scripts/check-release-config.ts
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - name: Type check
+        run: bunx tsc -b --pretty false
+      - name: Test
+        run: bun run test
+      - name: Build
+        run: bun run build
+
+  rust-core:
+    name: Rust core and CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.88.0
+          components: rustfmt, clippy
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --locked -p claude-zhcn-core -p claude-zhcn-cli --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --locked -p claude-zhcn-core -p claude-zhcn-cli
+      - name: Prove the blocked example fails closed
+        shell: bash
+        run: |
+          if cargo run --locked -p claude-zhcn-cli -- validate-manifest resources/supported-release.example.json; then
+            echo "blocked example was unexpectedly accepted" >&2
+            exit 1
+          fi
+      - name: Validate a production manifest when present
+        shell: bash
+        run: |
+          if test -f resources/supported-release.json; then
+            cargo run --locked -p claude-zhcn-cli -- validate-manifest resources/supported-release.json
+          else
+            echo "Production manifest is intentionally absent in the scaffold."
+          fi
+
+  native-smoke:
+    name: Native smoke (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: aarch64-apple-darwin
+          - os: macos-14
+            target: x86_64-apple-darwin
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.88.0
+          target: ${{ matrix.target }}
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Compile native desktop target
+        run: cargo check --locked -p claude-zhcn-desktop --target ${{ matrix.target }}

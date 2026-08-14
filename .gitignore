@@ -1,0 +1,58 @@
+# Security / local configuration
+AGENTS.local.md
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Temporary / progress files
+tmp/
+.full-review/
+.full-review-archive/
+.worktrees/
+
+# Rust
+/target/
+**/target/
+
+# JavaScript / Tauri
+node_modules/
+dist/
+.vite/
+src-tauri/gen/
+release-staging/
+release-assets/
+
+# Test and coverage output
+coverage/
+*.profraw
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
