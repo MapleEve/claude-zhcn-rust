@@ -15,7 +15,7 @@ tauri-build = { version = "=2.5.6", features = [] }
 [dependencies]
 claude-zhcn-core = { path = "../crates/claude-zhcn-core" }
 tauri = { version = "=2.10.3", features = [] }
-tauri-runtime = "=2.10.1"
+tauri-runtime = "=2.11.3"
 tauri-runtime-wry = "=2.10.1"
 tauri-plugin-process = "=2.3.1"
 tauri-plugin-updater = "=2.10.0"
